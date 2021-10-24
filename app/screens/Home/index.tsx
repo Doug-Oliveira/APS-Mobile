@@ -1,60 +1,80 @@
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { View, Text, Image, KeyboardAvoidingView, TouchableOpacity, ScrollView, SafeAreaView, Platform} from "react-native";
+import { View, Text, Image, KeyboardAvoidingView, TouchableOpacity, ScrollView, SafeAreaView, Platform, Button, FlatList} from "react-native";
 import { TextInput} from 'react-native-paper';
+import { Component } from "react"; 
+import { useForm, SubmitHandler } from 'react-hook-form'
 
 import {styles} from './styles';
 
-export function Home(){
+export default class Home extends Component{
+  /*
+  var state = {
+    "city_name": "Rio de Janeiro",
+    "date": "19/10/2021",
+    "temp": 17,
+    "category": "Good",
+    "CO": 1.07921,
+    "NO2": 21.284,
+    "hours": "23:14"
+  },
+  */
+  
+  constructor(props) {
+    super(props);
+    this.state = {
+      teste: 0
+    };
+  }
 
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-
-  const sendRequest = (event: React.FormEvent<HTMLFormElement>) =>{
+  
+  async sendRequest() :Promise <JSON> {
     
-    event.preventDefault();
-
-    fetch('url', {
+    const response = await fetch('http://localhost:3300/air-quality', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        city: cityData,
-        state: stateData
       },
+      body: JSON.stringify({
+        city: "SaoPaulo",
+        state:  "SP"
+      })
     })
-      .then(res => {
+      .then(async res => {
         return res.json()
       })
-      .then(data => console.log(data))
-      .catch(error => console.log('ERROR'))
+      .then(data => {
+        this.setState({teste: data})
+        console.log(this.state.teste)
+        
+      })
+      .catch(error => console.log(error.message))
   }
 
-  return(
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height" } enabled>
-       
-          <View style={styles.container}>
-            <form onSubmit={sendRequest}>
-              <TextInput style={styles.input_password}
-              placeholder="Cidade"
-              value={city}
+    async funcao() :Promise <JSON>{
+      const response = await this.sendRequest()
 
-              onChange={(e) => setCity(e.target.value)}
-              />
-              <TextInput style={styles.input_password}
-              placeholder="Estado"
-              value={state} 
-              onChange={(e) => setState(e.target.value)}
-              />
-              <TouchableOpacity style={styles.btn} activeOpacity={0.7}> 
-                <Text style={styles.text_btn}>
-                  <button type="submit">
-                    Ver Dados
-                  </button>
-                </Text>
-              </TouchableOpacity>
-            </form>
-          </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-)};
+    }
+
+  render(){
+    return(
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height" } enabled>
+            <View style={styles.container}>
+              <form>
+                <Text>{this.state.teste.city_name}</Text>
+                <Text>{this.state.teste.date}</Text>
+                <Text>{this.state.teste.temp}</Text>
+                <Text>{this.state.teste.category}</Text>
+                <Text>{this.state.teste.CO}</Text>
+                <Text>{this.state.teste.NO2}</Text>
+                <Text>{this.state.teste.hours}</Text>
+                <Button title="Ok"
+                onPress={ () => this.funcao()}/>
+              </form>
+            </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    )
+  }
+}
